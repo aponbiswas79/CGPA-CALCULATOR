@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CG-CAL — Smart CGPA and Grade Calculator for Khulna University students.">
+<title>CG-CAL | Khulna University CGPA Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0F172A;--bg2:#1E293B;--bg3:#334155;
+  --text:#F1F5F9;--text2:#94A3B8;--text3:#64748B;
+  --blue:#2563EB;--sky:#38BDF8;--green:#22C55E;
+  --amber:#F59E0B;--red:#EF4444;--purple:#A78BFA;--pink:#F472B6;
+  --card:#1E293B;--border:#334155;--r:12px;
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+}
+body.light{
+  --bg:#F0F4F8;--bg2:#FFFFFF;--bg3:#E8EEF5;
+  --text:#0F172A;--text2:#475569;--text3:#94A3B8;
+  --card:#FFFFFF;--border:#CBD5E1;--shadow:0 4px 24px rgba(0,0,0,.08);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s;line-height:1.5}
+
+.topbar{background:rgba(15,23,42,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;transition:background .3s}
+body.light .topbar{background:rgba(240,244,248,.96)}
+.topbar-inner{max-width:1140px;margin:0 auto;padding:0 20px;display:flex;align-items:center;height:60px;gap:16px}
+.logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,#2563EB,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;flex-shrink:0}
+.logo sub{font-size:10px;font-weight:400;opacity:.6;-webkit-text-fill-color:var(--text2);color:var(--text2)}
+.nav{display:flex;gap:2px;flex:1;justify-content:center;flex-wrap:wrap}
+.nav-btn{padding:7px 13px;border-radius:8px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;white-space:nowrap;font-family:inherit}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.on{background:var(--blue);color:#fff}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.icon-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;padding:7px 11px;font-size:13px;transition:all .2s;font-family:inherit}
+.icon-btn:hover{color:var(--text);border-color:var(--blue)}
+
+.app{max-width:1140px;margin:0 auto;padding:0 20px 100px}
+.page{display:none;padding-top:28px;animation:fadeIn .25s ease}
+.page.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;transition:background .3s,border-color .3s}
+.card-sm{padding:16px 18px}
+.card-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:9px;color:var(--text)}
+.ctag{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.t-blue{background:rgba(37,99,235,.18);color:#60a5fa}
+.t-green{background:rgba(34,197,94,.18);color:#4ade80}
+.t-amber{background:rgba(245,158,11,.18);color:#fbbf24}
+.t-purple{background:rgba(167,139,250,.18);color:#c4b5fd}
+.t-red{background:rgba(239,68,68,.18);color:#f87171}
+.t-pink{background:rgba(244,114,182,.18);color:#f9a8d4}
+.t-sky{background:rgba(56,189,248,.18);color:#7dd3fc}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:900px){.g4{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.g2,.g3{grid-template-columns:1fr}.g4{grid-template-columns:1fr 1fr}}
+
+.lbl{display:block;font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+input[type=number],input[type=text],select,textarea{width:100%;background:var(--bg3);border:1.5px solid var(--border);border-radius:9px;color:var(--text);padding:10px 13px;font-size:14px;outline:none;transition:border .2s,background .2s;font-family:inherit}
+input[type=number]:focus,input[type=text]:focus,select:focus,textarea:focus{border-color:var(--blue);background:var(--bg2)}
+input::placeholder{color:var(--text3)}
+select option{background:var(--bg2);color:var(--text)}
+body.light select option{background:#fff}
+
+.btn{padding:10px 18px;border-radius:9px;border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .2s;font-family:inherit;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:linear-gradient(135deg,#2563EB,#1d4ed8);color:#fff;box-shadow:0 2px 12px rgba(37,99,235,.4)}
+.btn-primary:hover{background:linear-gradient(135deg,#1d4ed8,#1e40af);transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,99,235,.5)}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1.5px solid var(--border)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--sky)}
+.btn-danger{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:7px}
+.btn-xs{padding:4px 8px;font-size:11px;border-radius:6px}
+
+.scard{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:18px;text-align:center;position:relative;overflow:hidden;transition:all .2s}
+.scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent,var(--blue))}
+.scard:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.scard-val{font-size:30px;font-weight:800;margin:6px 0 4px}
+.scard-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.scard-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+.ptrack{background:var(--bg3);border-radius:99px;height:8px;overflow:hidden;margin:6px 0}
+.pfill{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.pf-gr{background:linear-gradient(90deg,#16a34a,#4ade80)}
+.pf-bl{background:linear-gradient(90deg,#1d4ed8,#38BDF8)}
+.pf-am{background:linear-gradient(90deg,#b45309,#fbbf24)}
+.pf-re{background:linear-gradient(90deg,#991b1b,#f87171)}
+.pf-pu{background:linear-gradient(90deg,#6d28d9,#c4b5fd)}
+
+.gbadge{display:inline-flex;align-items:center;justify-content:center;font-weight:800;border-radius:9px;padding:5px 14px;font-size:16px}
+.g-ap{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.g-a{background:rgba(56,189,248,.15);color:#38BDF8;border:1px solid rgba(56,189,248,.3)}
+.g-am{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.3)}
+.g-bp{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
+.g-b{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.g-bm{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3)}
+.g-cp{background:rgba(249,115,22,.15);color:#f97316;border:1px solid rgba(249,115,22,.3)}
+.g-c{background:rgba(234,179,8,.15);color:#eab308;border:1px solid rgba(234,179,8,.3)}
+.g-d{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.g-f{background:rgba(127,29,29,.25);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+
+.fb{padding:12px 16px;border-radius:10px;display:flex;align-items:center;gap:10px;font-weight:500;font-size:13px}
+.fb-gr{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#4ade80}
+.fb-bl{background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);color:#38BDF8}
+.fb-am{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:#fbbf24}
+.fb-re{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171}
+.fb-pu{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:#c4b5fd}
+
+.result-box{background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(56,189,248,.04));border:1px solid rgba(56,189,248,.2);border-radius:var(--r);padding:22px;margin-top:18px}
+
+.hero{text-align:center;padding:48px 20px 36px;position:relative}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(37,99,235,.15);border:1px solid rgba(56,189,248,.3);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--sky);margin-bottom:18px}
+.hero h1{font-size:48px;font-weight:800;line-height:1.08;margin-bottom:14px;background:linear-gradient(135deg,#fff 0%,#38BDF8 60%,#2563EB 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+body.light .hero h1{background:linear-gradient(135deg,#0F172A 0%,#1d4ed8 60%,#38BDF8 100%);-webkit-background-clip:text;background-clip:text}
+.hero p{color:var(--text2);font-size:17px;max-width:520px;margin:0 auto 28px;line-height:1.6}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+@media(max-width:500px){.hero h1{font-size:32px}.hero p{font-size:15px}}
+
+hr{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:10px 12px;color:var(--text2);font-weight:600;border-bottom:1.5px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid rgba(51,65,85,.35);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(37,99,235,.06)}
+
+.mini-card{background:var(--bg3);border-radius:10px;padding:14px;text-align:center}
+.mc-val{font-size:22px;font-weight:800}
+.mc-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+.sem-row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:center;background:var(--bg3);border-radius:10px;padding:10px 14px;margin-bottom:8px;transition:background .2s}
+.sem-row:hover{background:var(--border)}
+.sem-row input{background:transparent;border:none;font-size:13px;font-weight:500;padding:4px 0;outline:none;color:var(--text)}
+.sem-row input:focus{border-bottom:1px solid var(--blue)}
+@media(max-width:500px){.sem-row{grid-template-columns:1fr 1fr;grid-template-rows:auto auto}.sem-row input:first-child{grid-column:1/-1}.sem-row .btn{grid-column:2}}
+
+.gs-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(51,65,85,.3)}
+.gs-row:last-child{border:none}
+
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.sh-title{font-size:20px;font-weight:800}
+
+.chart-wrap{position:relative;height:240px;margin-top:12px}
+.chart-wrap-sm{position:relative;height:180px}
+
+.need-card{background:var(--bg3);border-radius:10px;padding:16px;text-align:center;border:1px solid var(--border)}
+.need-val{font-size:26px;font-weight:800;color:var(--sky)}
+.need-lbl{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+.pred-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(51,65,85,.25);font-size:12px}
+.pred-row:last-child{border:none}
+
+.faq-item{border-bottom:1px solid var(--border);padding:16px 0}
+.faq-q{display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;font-size:14px;gap:10px}
+.faq-a{display:none;padding-top:10px;color:var(--text2);font-size:13px;line-height:1.65}
+.faq-item.open .faq-a{display:block}
+.faq-item.open .faq-arr{transform:rotate(180deg)}
+.faq-arr{transition:transform .2s;flex-shrink:0;color:var(--text3);font-size:11px}
+
+@media print{.topbar,.mob-nav,.hero-btns,.btn{display:none!important}.app{padding:0}.page{display:block!important}}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:480px;transform:translateY(16px);transition:transform .25s;max-height:90vh;overflow-y:auto}
+.modal-overlay.open .modal-box{transform:none}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.modal-title{font-size:17px;font-weight:800}
+.modal-close{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;padding:6px 10px;font-size:16px;line-height:1;transition:all .2s}
+.modal-close:hover{color:var(--text);border-color:var(--blue)}
+.modal-field{margin-bottom:16px}
+
+/* TOAST */
+#toast{position:fixed;bottom:80px;right:20px;z-index:600;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:13px;font-weight:600;color:var(--text);box-shadow:0 8px 32px rgba(0,0,0,.35);transform:translateY(20px);opacity:0;transition:all .3s;pointer-events:none;display:flex;align-items:center;gap:10px;max-width:320px}
+#toast.show{transform:none;opacity:1}
+#toast.toast-success{border-color:rgba(34,197,94,.4);color:var(--green)}
+#toast.toast-error{border-color:rgba(239,68,68,.4);color:var(--red)}
+
+/* PROFILE BADGE */
+.profile-badge{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:5px 11px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:all .2s;white-space:nowrap}
+.profile-badge:hover{border-color:var(--blue);color:var(--text)}
+.profile-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+.hist-empty{text-align:center;padding:28px;color:var(--text2);font-size:13px}
+
+/* TARGET GPA */
+.target-result-visual{background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(56,189,248,.05));border:1px solid rgba(56,189,248,.25);border-radius:12px;padding:22px;text-align:center;margin-top:16px}
+.target-gpa-big{font-size:56px;font-weight:900;background:linear-gradient(135deg,#38BDF8,#2563EB);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.target-gpa-verdict{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;margin-top:10px;text-transform:uppercase;letter-spacing:.6px}
+.verdict-easy{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3)}
+.verdict-hard{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.verdict-impossible{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+
+/* PROGRESS TRACKER */
+.progress-track-bar{background:var(--border);border-radius:99px;height:16px;overflow:hidden;position:relative;margin:10px 0 6px}
+.progress-track-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1d4ed8,#38BDF8);transition:width .8s cubic-bezier(.4,0,.2,1)}
+.milestone-markers{position:relative;height:20px;margin-top:4px}
+.milestone{position:absolute;transform:translateX(-50%);font-size:10px;color:var(--text3);text-align:center;white-space:nowrap}
+
+/* PDF BUTTON */
+.btn-pdf{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-pdf:hover{background:rgba(239,68,68,.2);transform:translateY(-1px)}
+.btn-pdf.loading{opacity:.65;pointer-events:none}
+
+/* PWA BANNER */
+#pwaBanner{display:none;background:linear-gradient(135deg,rgba(37,99,235,.15),rgba(56,189,248,.08));border:1px solid rgba(56,189,248,.3);border-radius:12px;padding:14px 18px;margin-bottom:18px;align-items:center;gap:14px;flex-wrap:wrap}
+#pwaBanner.visible{display:flex}
+.pwa-banner-text{flex:1;font-size:13px;color:var(--text2)}
+.pwa-banner-text strong{color:var(--sky)}
+
+/* MOBILE NAV */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);padding:6px 4px;z-index:300;gap:2px}
+@media(max-width:680px){.mob-nav{display:flex!important}.nav{display:none}}
+.mob-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:transparent;border:none;color:var(--text2);cursor:pointer;padding:6px 4px;border-radius:8px;font-size:9px;font-weight:600;font-family:inherit;transition:all .2s}
+.mob-btn.on{color:var(--sky);background:rgba(56,189,248,.1)}
+.mob-btn .mi{font-size:18px}
+
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:36px 20px;margin-top:48px}
+.footer-inner{max-width:1140px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px;margin-bottom:28px}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr}}
+.footer-lnk{color:var(--text2);text-decoration:none;display:block;margin-bottom:8px;font-size:13px;transition:color .2s;cursor:pointer}
+.footer-lnk:hover{color:var(--sky)}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="logo">CG<span style="-webkit-text-fill-color:var(--sky);color:var(--sky)">-</span>CAL<sub>KU</sub></div>
+    <nav class="nav" id="mainNav">
+      <button class="nav-btn on" onclick="nav('home',this)">Home</button>
+      <button class="nav-btn" onclick="nav('theory',this)">Theory</button>
+      <button class="nav-btn" onclick="nav('lab',this)">Lab</button>
+      <button class="nav-btn" onclick="nav('gpa',this)">GPA</button>
+      <button class="nav-btn" onclick="nav('cgpa',this)">CGPA</button>
+      <button class="nav-btn" onclick="nav('dashboard',this)">Dashboard</button>
+      <button class="nav-btn" onclick="nav('scale',this)">Grade Scale</button>
+      <button class="nav-btn" onclick="nav('about',this)">About KU</button>
+    </nav>
+    <div class="topbar-actions">
+      <div class="profile-badge" onclick="openProfileModal()" id="profileBadge" style="display:none">
+        <div class="profile-dot"></div>
+        <span id="profileBadgeText">Profile</span>
+      </div>
+      <button class="icon-btn" onclick="openProfileModal()" id="profileBtn" title="Set up student profile">👤</button>
+      <button class="icon-btn btn-pdf" onclick="exportToPDF()" id="pdfBtn" title="Export to PDF">📄 PDF</button>
+      <button class="icon-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀️</button>
+      <button class="icon-btn" onclick="window.print()" title="Print">🖨️</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title">👤 Student Profile</div>
+      <button class="modal-close" onclick="closeProfileModal()">✕</button>
+    </div>
+    <div class="modal-field">
+      <label class="lbl">Full Name</label>
+      <input type="text" id="profileName" placeholder="e.g. Apon Biswas">
+    </div>
+    <div class="modal-field">
+      <label class="lbl">Student ID</label>
+      <input type="text" id="profileID" placeholder="e.g. 260279">
+    </div>
+    <div class="modal-field">
+      <label class="lbl">Discipline</label>
+      <input type="text" id="profileDisc" placeholder="e.g. Computer Science & Engineering">
+    </div>
+    <div class="modal-field">
+      <label class="lbl">Batch</label>
+      <input type="text" id="profileBatch" placeholder="21/22/23/24/25/26">
+    </div>
+    <div class="modal-field">
+      <label class="lbl">Total Required Credits for Graduation</label>
+      <input type="number" id="profileTotalCredits" placeholder="e.g. 160" min="60" max="300">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px">
+      <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+      <button class="btn btn-danger btn-sm" onclick="clearProfile()">Clear</button>
+    </div>
+    <div style="margin-top:14px;font-size:11px;color:var(--text3);text-align:center">
+      Profile data is stored only in your browser. Nothing is sent online.
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<div class="app">
+
+<!-- HOME -->
+<div class="page on" id="page-home">
+  <div id="pwaBanner">
+    <span style="font-size:28px">📲</span>
+    <div class="pwa-banner-text"><strong>Install CG-CAL as an App</strong><br>Access it offline, any time — no browser needed.</div>
+    <button class="btn btn-primary btn-sm" onclick="installPWA()">Install App</button>
+    <button class="btn btn-ghost btn-sm" onclick="dismissPWABanner()">✕</button>
+  </div>
+
+  <div class="hero">
+    <div class="hero-badge">🎓 Khulna University · Bangladesh · Est. 1987</div>
+    <h1>Smart CGPA &<br>Grade Calculator</h1>
+    <p>Calculate carry marks, predict grades, compute GPA and CGPA using KU's official grading system. Designed for every school and discipline.</p>
+    <div class="hero-btns">
+      <button class="btn btn-primary" onclick="nav('theory',null)">Theory Calculator</button>
+      <button class="btn btn-ghost" onclick="nav('lab',null)">Lab Calculator</button>
+      <button class="btn btn-ghost" onclick="nav('gpa',null)">GPA Calculator</button>
+      <button class="btn btn-ghost" onclick="nav('cgpa',null)">CGPA Calculator</button>
+    </div>
+  </div>
+
+  <div class="g4" style="margin-bottom:24px">
+    <div class="scard" style="--accent:#2563EB"><div class="scard-lbl">Schools</div><div class="scard-val" style="color:var(--sky)">8</div><div class="scard-sub">Academic Schools</div></div>
+    <div class="scard" style="--accent:#22C55E"><div class="scard-lbl">Disciplines</div><div class="scard-val" style="color:var(--green)">29</div><div class="scard-sub">Departments at KU</div></div>
+    <div class="scard" style="--accent:#F59E0B"><div class="scard-lbl">Grade Scale</div><div class="scard-val" style="color:var(--amber)">4.00</div><div class="scard-sub">Max GPA / CGPA</div></div>
+    <div class="scard" style="--accent:#A78BFA"><div class="scard-lbl">Pass Mark</div><div class="scard-val" style="color:var(--purple)">40</div><div class="scard-sub">Minimum out of 100</div></div>
+  </div>
+
+  <!-- Progress Tracker -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><span class="ctag t-green">📈</span> Academic Progress Tracker</div>
+    <div id="progressTrackerContent">
+      <div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">Enter credits below to track your progress.</div>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:10px">Manual Credit Entry</div>
+      <div class="g2" style="gap:10px">
+        <div>
+          <label class="lbl">Credits Completed</label>
+          <input type="number" id="progressCredsDone" min="0" max="300" placeholder="e.g. 72" oninput="renderProgressTracker()">
+        </div>
+        <div>
+          <label class="lbl">Total Required Credits</label>
+          <input type="number" id="progressCredsTotal" min="1" max="300" placeholder="e.g. 160" oninput="renderProgressTracker()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Target GPA Calculator -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><span class="ctag t-amber">🎯</span> What GPA Do I Need?</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:16px;line-height:1.6">Enter your current standing and your goal to find out exactly what GPA you need next semester.</p>
+    <div class="g2" style="margin-bottom:12px">
+      <div><label class="lbl">Current CGPA</label><input type="number" id="tgCurrentCGPA" min="0" max="4" step="0.01" placeholder="e.g. 3.20" oninput="calculateTargetGPA()"></div>
+      <div><label class="lbl">Credits Completed So Far</label><input type="number" id="tgCurrentCredits" min="0" placeholder="e.g. 90" oninput="calculateTargetGPA()"></div>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div><label class="lbl">Target CGPA</label><input type="number" id="tgTargetCGPA" min="0" max="4" step="0.01" placeholder="e.g. 3.50" oninput="calculateTargetGPA()"></div>
+      <div><label class="lbl">Credits in Next Semester</label><input type="number" id="tgNextCredits" min="1" placeholder="e.g. 18" oninput="calculateTargetGPA()"></div>
+    </div>
+    <div id="targetGPAResult"></div>
+  </div>
+
+  <!-- History -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title" style="justify-content:space-between">
+      <span><span class="ctag t-sky">🕘</span>&nbsp; Calculation History</span>
+      <button class="btn btn-danger btn-xs" onclick="clearHistory()">🗑 Clear</button>
+    </div>
+    <div id="historyContent"><div class="hist-empty">No calculations saved yet. Use the GPA or CGPA calculator and save a result.</div></div>
+  </div>
+
+  <!-- School Selector -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="card-title"><span class="ctag t-blue">🏫</span> Select Your School & Discipline</div>
+    <div class="g2" style="margin-bottom:18px">
+      <div><label class="lbl">School</label><select id="homeSchool" onchange="updateHomeDisc()"><option value="">— Select School —</option></select></div>
+      <div><label class="lbl">Discipline</label><select id="homeDisc"><option value="">— Select Discipline —</option></select></div>
+    </div>
+    <div id="schoolInfoBox" style="display:none" class="fb fb-bl"><span id="schoolInfoText"></span></div>
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="g2">
+    <div class="card card-sm" style="cursor:pointer;transition:all .2s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'" onclick="nav('theory',null)">
+      <div class="card-title"><span class="ctag t-blue">📐</span> Theory Course Calculator</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.6">Calculate carry marks from class tests & attendance. Predict required final exam marks for any target grade.</p>
+      <button class="btn btn-primary btn-sm">Open Theory Calculator →</button>
+    </div>
+    <div class="card card-sm" style="cursor:pointer;transition:all .2s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'" onclick="nav('lab',null)">
+      <div class="card-title"><span class="ctag t-green">🔬</span> Lab Course Calculator</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.6">Calculate lab course grades from attendance, viva, and final lab exam marks with performance analytics.</p>
+      <button class="btn btn-primary btn-sm">Open Lab Calculator →</button>
+    </div>
+    <div class="card card-sm" style="cursor:pointer;transition:all .2s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'" onclick="nav('gpa',null)">
+      <div class="card-title"><span class="ctag t-amber">📊</span> GPA Calculator</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.6">Add unlimited courses with credit hours and grades to automatically compute your semester GPA.</p>
+      <button class="btn btn-primary btn-sm">Open GPA Calculator →</button>
+    </div>
+    <div class="card card-sm" style="cursor:pointer;transition:all .2s" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='none'" onclick="nav('cgpa',null)">
+      <div class="card-title"><span class="ctag t-purple">🏆</span> CGPA Calculator</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.6">Add semesters with GPA and credits to calculate cumulative CGPA and simulate future performance.</p>
+      <button class="btn btn-primary btn-sm">Open CGPA Calculator →</button>
+    </div>
+  </div>
+</div>
+
+<!-- THEORY -->
+<div class="page" id="page-theory">
+  <div class="sh">
+    <div class="sh-title">Theory Course Calculator</div>
+    <button class="btn btn-ghost btn-sm" onclick="resetTheory()">↺ Reset</button>
+  </div>
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title"><span class="ctag t-blue">A</span> Section A — Class Tests</div>
+      <div class="g2">
+        <div><label class="lbl">Class Test 1 <span style="color:var(--text3)">(out of 30)</span></label><input type="number" id="ct1" min="0" max="30" placeholder="0 – 30" oninput="calcTheory()"></div>
+        <div><label class="lbl">Class Test 2 <span style="color:var(--text3)">(out of 30)</span></label><input type="number" id="ct2" min="0" max="30" placeholder="0 – 30" oninput="calcTheory()"></div>
+      </div>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--bg3);border-radius:9px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
+        <span>Best of CT1 & CT2</span><span style="color:var(--sky);font-weight:700;font-size:16px" id="bestA">—</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ctag t-purple">B</span> Section B — Class Tests</div>
+      <div class="g2">
+        <div><label class="lbl">Class Test 3 <span style="color:var(--text3)">(out of 30)</span></label><input type="number" id="ct3" min="0" max="30" placeholder="0 – 30" oninput="calcTheory()"></div>
+        <div><label class="lbl">Class Test 4 <span style="color:var(--text3)">(out of 30)</span></label><input type="number" id="ct4" min="0" max="30" placeholder="0 – 30" oninput="calcTheory()"></div>
+      </div>
+      <div style="margin-top:12px;padding:10px 14px;background:var(--bg3);border-radius:9px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
+        <span>Best of CT3 & CT4</span><span style="color:var(--purple);font-weight:700;font-size:16px" id="bestB">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><span class="ctag t-green">✓</span> Attendance</div>
+    <div style="max-width:240px">
+      <label class="lbl">Attendance Marks <span style="color:var(--text3)">(out of 10)</span></label>
+      <input type="number" id="attend" min="0" max="10" placeholder="0 – 10" oninput="calcTheory()">
+    </div>
+  </div>
+
+  <div id="theoryEmpty" class="card" style="text-align:center;padding:40px;color:var(--text2)">
+    <div style="font-size:48px;margin-bottom:12px">📝</div>
+    <div style="font-size:16px;font-weight:600;margin-bottom:6px">Enter your marks above</div>
+    <div style="font-size:13px">Fill in class test scores and attendance to see carry marks and grade prediction.</div>
+  </div>
+
+  <div id="theoryResult" style="display:none">
+    <div class="result-box" style="margin-bottom:16px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <div style="font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600">Total Carry Marks</div>
+          <div style="font-size:52px;font-weight:900;color:var(--sky);line-height:1" id="carryVal">—</div>
+          <div style="font-size:13px;color:var(--text3);margin-top:4px">out of <strong style="color:var(--text2)">40</strong></div>
+        </div>
+        <div style="min-width:200px;flex:1;max-width:320px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>Carry Performance</span><span id="carryPct">0%</span></div>
+          <div class="ptrack" style="height:12px"><div class="pfill pf-bl" id="carryBar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
+            <span>0</span><span>Best A: <span id="baDisp">—</span></span><span>Best B: <span id="bbDisp">—</span></span><span>40</span>
+          </div>
+        </div>
+      </div>
+      <div id="carryFb" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title"><span class="ctag t-sky">Σ</span> Carry Formula Breakdown</div>
+      <div class="g4" id="formulaBreakdown"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title"><span class="ctag t-amber">🎯</span> Grade Prediction — Final Exam</div>
+      <div class="g2" style="margin-bottom:16px">
+        <div>
+          <label class="lbl">Target Grade</label>
+          <select id="targetGrade" onchange="calcPrediction()">
+            <option value="A+">A+ — 80 to 100</option>
+            <option value="A" selected>A — 75 to 79</option>
+            <option value="A-">A- — 70 to 74</option>
+            <option value="B+">B+ — 65 to 69</option>
+            <option value="B">B — 60 to 64</option>
+            <option value="B-">B- — 55 to 59</option>
+            <option value="C+">C+ — 50 to 54</option>
+            <option value="C">C — 45 to 49</option>
+            <option value="D">D — 40 to 44</option>
+          </select>
+        </div>
+        <div id="targetResultCard"></div>
+      </div>
+      <div id="predFeedback" style="margin-bottom:14px"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">All Achievable Grades</div>
+      <div id="gradeRows"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="ctag t-pink">📊</span> Grade Distribution Chart</div>
+      <div class="chart-wrap"><canvas id="theoryChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- LAB -->
+<div class="page" id="page-lab">
+  <div class="sh">
+    <div class="sh-title">🔬 Lab Course Calculator</div>
+    <button class="btn btn-ghost btn-sm" onclick="resetLab()">↺ Reset</button>
+  </div>
+  <div class="g2" style="align-items:start">
+    <div class="card">
+      <div class="card-title"><span class="ctag t-green">🧪</span> Lab Marks Entry</div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><label class="lbl">Attendance <span style="color:var(--text3)">(out of 10)</span></label><input type="number" id="labA" min="0" max="10" placeholder="0 – 10" oninput="calcLab()"></div>
+        <div><label class="lbl">Viva <span style="color:var(--text3)">(out of 30)</span></label><input type="number" id="labV" min="0" max="30" placeholder="0 – 30" oninput="calcLab()"></div>
+        <div><label class="lbl">Final Lab Exam <span style="color:var(--text3)">(out of 60)</span></label><input type="number" id="labF" min="0" max="60" placeholder="0 – 60" oninput="calcLab()"></div>
+      </div>
+      <div id="labEmpty" style="margin-top:20px;text-align:center;padding:24px;color:var(--text2)">
+        <div style="font-size:32px;margin-bottom:8px">🧪</div>
+        <div style="font-size:13px">Enter lab marks to see your grade.</div>
+      </div>
+      <div id="labResult" style="display:none;margin-top:20px">
+        <hr style="margin-bottom:16px">
+        <div class="g3" style="margin-bottom:14px">
+          <div class="mini-card"><div class="mc-val" id="labTotal" style="color:var(--sky)">—</div><div class="mc-lbl">Total / 100</div></div>
+          <div class="mini-card"><div id="labGradeBadge" class="mc-val">—</div><div class="mc-lbl">Grade</div></div>
+          <div class="mini-card"><div class="mc-val" id="labGP" style="color:var(--amber)">—</div><div class="mc-lbl">Grade Point</div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px"><span>Overall Performance</span><span id="labPctLbl">0%</span></div>
+          <div class="ptrack"><div class="pfill" id="labBar" style="width:0%"></div></div>
+        </div>
+        <div id="labFb" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="ctag t-blue">📊</span> Lab Marks Breakdown</div>
+        <div id="labBreakdownBars"><div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Enter marks to see breakdown</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ctag t-amber">ℹ️</span> Lab Evaluation Structure</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:8px"><span>📋 Attendance</span><span style="font-weight:700;color:var(--green)">10 marks</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:8px"><span>🎤 Viva</span><span style="font-weight:700;color:var(--blue)">30 marks</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3);border-radius:8px"><span>🧪 Final Lab Exam</span><span style="font-weight:700;color:var(--purple)">60 marks</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(56,189,248,.1);border-radius:8px;border:1px solid rgba(56,189,248,.25)"><span style="font-weight:600">Total</span><span style="font-weight:800;color:var(--sky)">100 marks</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GPA -->
+<div class="page" id="page-gpa">
+  <div class="sh">
+    <div class="sh-title">📊 GPA Calculator</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="resetGPA()">↺ Reset</button>
+      <button class="btn btn-primary btn-sm" onclick="addCourse()">+ Add Course</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px;overflow-x:auto">
+    <table class="tbl" id="courseTable">
+      <thead><tr><th style="min-width:180px">Course Name</th><th style="width:100px">Credit Hours</th><th style="width:140px">Grade</th><th style="width:90px">Grade Point</th><th style="width:80px">Weighted</th><th style="width:50px"></th></tr></thead>
+      <tbody id="courseBody"></tbody>
+    </table>
+    <div id="gpaEmpty" style="text-align:center;padding:36px;color:var(--text2)">
+      <div style="font-size:36px;margin-bottom:10px">📚</div>
+      <div style="font-weight:600;margin-bottom:5px">No courses added yet</div>
+      <div style="font-size:13px">Click "+ Add Course" to start calculating your GPA.</div>
+    </div>
+  </div>
+  <div id="gpaResult" style="display:none">
+    <div class="result-box">
+      <div class="g4" style="margin-bottom:16px">
+        <div class="need-card"><div class="need-val" id="gpaVal">—</div><div class="need-lbl">Semester GPA</div></div>
+        <div class="need-card"><div class="need-val" id="gpaTotalCreds" style="color:var(--green)">—</div><div class="need-lbl">Total Credits</div></div>
+        <div class="need-card"><div class="need-val" id="gpaTotalGP" style="color:var(--amber)">—</div><div class="need-lbl">Grade Points</div></div>
+        <div class="need-card"><div class="need-val" id="gpaCourseCount" style="color:var(--purple)">—</div><div class="need-lbl">Courses</div></div>
+      </div>
+      <div id="gpaStanding"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="saveGPAToHistory()">💾 Save to History</button>
+        <button class="btn btn-pdf btn-sm" onclick="exportGPAReport()">📄 Export PDF Report</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title"><span class="ctag t-pink">📊</span> Grade Distribution</div>
+      <div class="chart-wrap-sm"><canvas id="gpaChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- CGPA -->
+<div class="page" id="page-cgpa">
+  <div class="sh">
+    <div class="sh-title">🏆 CGPA Calculator</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="resetCGPA()">↺ Reset</button>
+      <button class="btn btn-primary btn-sm" onclick="addSemester()">+ Add Semester</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title"><span class="ctag t-purple">🗓️</span> Semester Records</div>
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;padding:8px 14px;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600">
+      <span>Semester Name</span><span>GPA (0–4.00)</span><span>Credits</span><span></span>
+    </div>
+    <div id="semesterList">
+      <div style="text-align:center;padding:32px;color:var(--text2)">
+        <div style="font-size:36px;margin-bottom:10px">🗓️</div>
+        <div style="font-weight:600;margin-bottom:5px">No semesters added</div>
+        <div style="font-size:13px">Click "+ Add Semester" to begin.</div>
+      </div>
+    </div>
+  </div>
+  <div id="cgpaResult" style="display:none">
+    <div class="result-box" style="margin-bottom:16px">
+      <div class="g4" style="margin-bottom:16px">
+        <div class="need-card"><div class="need-val" id="cgpaVal">—</div><div class="need-lbl">Current CGPA</div></div>
+        <div class="need-card"><div class="need-val" id="cgpaCredits" style="color:var(--green)">—</div><div class="need-lbl">Total Credits</div></div>
+        <div class="need-card"><div class="need-val" id="cgpaSems" style="color:var(--amber)">—</div><div class="need-lbl">Semesters</div></div>
+        <div class="need-card"><div id="cgpaStandBadge" class="need-val" style="font-size:14px">—</div><div class="need-lbl">Standing</div></div>
+      </div>
+      <div id="cgpaStandFb"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="saveCGPAToHistory()">💾 Save to History</button>
+        <button class="btn btn-pdf btn-sm" onclick="exportCGPAReport()">📄 Export PDF Report</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title"><span class="ctag t-blue">📈</span> GPA Trend by Semester</div>
+      <div class="chart-wrap"><canvas id="cgpaChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ctag t-amber">🔮</span> Future Semester Simulator</div>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:14px">Simulate how your CGPA changes if you achieve a target GPA next semester.</p>
+      <div class="g2" style="margin-bottom:14px">
+        <div><label class="lbl">Projected GPA (next semester)</label><input type="number" id="futureGPA" min="0" max="4" step="0.01" placeholder="e.g. 3.80" oninput="calcFuture()"></div>
+        <div><label class="lbl">Credits (next semester)</label><input type="number" id="futureCreds" min="1" max="30" placeholder="e.g. 18" oninput="calcFuture()"></div>
+      </div>
+      <div id="futureResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="sh">
+    <div class="sh-title">📈 Academic Dashboard</div>
+    <button class="btn btn-ghost btn-sm" onclick="refreshDashboard()">↺ Refresh</button>
+  </div>
+  <div id="dashboardContent"></div>
+</div>
+
+<!-- GRADE SCALE -->
+<div class="page" id="page-scale">
+  <div class="sh"><div class="sh-title">📋 KU Official Grade Scale</div></div>
+  <div class="g2" style="margin-bottom:16px">
+    <div class="card">
+      <div class="card-title"><span class="ctag t-blue">📊</span> Grading Table</div>
+      <div id="gradeScaleTable"></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="ctag t-amber">🔍</span> Grade Lookup</div>
+        <label class="lbl">Enter Total Marks (out of 100)</label>
+        <input type="number" id="lookupMarks" min="0" max="100" placeholder="0 – 100" oninput="lookupGrade()">
+        <div id="lookupResult" style="margin-top:16px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ctag t-green">🏅</span> Academic Standing</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(34,197,94,.1);border-radius:8px;border:1px solid rgba(34,197,94,.2)"><span style="font-weight:600">Dean's List</span><span style="color:var(--green);font-weight:700">CGPA ≥ 3.75</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(56,189,248,.1);border-radius:8px;border:1px solid rgba(56,189,248,.2)"><span style="font-weight:600">Excellent</span><span style="color:var(--sky);font-weight:700">CGPA ≥ 3.50</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(167,139,250,.1);border-radius:8px;border:1px solid rgba(167,139,250,.2)"><span style="font-weight:600">Very Good</span><span style="color:var(--purple);font-weight:700">CGPA ≥ 3.00</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(245,158,11,.1);border-radius:8px;border:1px solid rgba(245,158,11,.2)"><span style="font-weight:600">Good</span><span style="color:var(--amber);font-weight:700">CGPA ≥ 2.50</span></div>
+          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(239,68,68,.1);border-radius:8px;border:1px solid rgba(239,68,68,.2)"><span style="font-weight:600">Probation Risk</span><span style="color:var(--red);font-weight:700">CGPA &lt; 2.00</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT KU -->
+<div class="page" id="page-about">
+  <div class="sh"><div class="sh-title">🎓 About Khulna University</div></div>
+  <div class="g2" style="margin-bottom:20px;align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title"><span class="ctag t-blue">🏛️</span> University Overview</div>
+        <p style="color:var(--text2);font-size:14px;line-height:1.75;margin-bottom:12px">Khulna University (KU) is a public research university located in Khulna, Bangladesh. Established in 1987 and inaugurated in 1991, it is one of the leading specialized universities in Bangladesh.</p>
+        <div class="g2" style="gap:10px">
+          <div style="background:var(--bg3);border-radius:9px;padding:12px"><div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Established</div><div style="font-size:18px;font-weight:700;color:var(--sky)">1987</div></div>
+          <div style="background:var(--bg3);border-radius:9px;padding:12px"><div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Location</div><div style="font-size:14px;font-weight:600;color:var(--text)">Khulna, BD</div></div>
+          <div style="background:var(--bg3);border-radius:9px;padding:12px"><div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Type</div><div style="font-size:14px;font-weight:600;color:var(--text)">Public University</div></div>
+          <div style="background:var(--bg3);border-radius:9px;padding:12px"><div style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Campus</div><div style="font-size:14px;font-weight:600;color:var(--text)">104 Acres</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="ctag t-purple">❓</span> Frequently Asked Questions</div>
+        <div id="faqList"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="ctag t-green">🏫</span> Schools & Disciplines</div>
+        <div id="schoolDisciplineList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<!-- MOBILE NAV -->
+<div class="mob-nav" id="mobNav">
+  <button class="mob-btn on" onclick="nav('home',null);setMob(this)"><span class="mi">🏠</span>Home</button>
+  <button class="mob-btn" onclick="nav('theory',null);setMob(this)"><span class="mi">📐</span>Theory</button>
+  <button class="mob-btn" onclick="nav('lab',null);setMob(this)"><span class="mi">🔬</span>Lab</button>
+  <button class="mob-btn" onclick="nav('gpa',null);setMob(this)"><span class="mi">📊</span>GPA</button>
+  <button class="mob-btn" onclick="nav('cgpa',null);setMob(this)"><span class="mi">🏆</span>CGPA</button>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <div style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#2563EB,#38BDF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px">CG-CAL</div>
+        <p style="color:var(--text2);font-size:13px;line-height:1.65;max-width:300px">Any problem or feedback? Email: aponb35@gmail.com</p>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:12px">Calculators</div>
+        <a class="footer-lnk" onclick="nav('theory',null)">Theory Course</a>
+        <a class="footer-lnk" onclick="nav('lab',null)">Lab Course</a>
+        <a class="footer-lnk" onclick="nav('gpa',null)">GPA Calculator</a>
+        <a class="footer-lnk" onclick="nav('cgpa',null)">CGPA Calculator</a>
+        <a class="footer-lnk" onclick="nav('dashboard',null)">Dashboard</a>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:12px">Resources</div>
+        <a class="footer-lnk" onclick="nav('scale',null)">📋 Grade Scale</a>
+        <a class="footer-lnk" onclick="nav('about',null)">🎓 About KU</a>
+        <a class="footer-lnk" href="https://www.ku.ac.bd" target="_blank" rel="noopener">🌐 KU Official Website ↗</a>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--text3)">
+      <span>© 2025 CG-CAL · Unofficial academic tool for KU students · Developed by Apon Biswas [CSE-26]</span>
+      <span>All calculations based on KU's official grading system</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* =========================================
+   DATA
+   ========================================= */
+const SCHOOLS = [
+  {name:'School of Science, Engineering & Technology',short:'SET',disciplines:['Computer Science & Engineering (CSE)','Electronics & Communication Engineering (ECE)','Mathematics','Statistics','Physics','Chemistry','Urban & Rural Planning (URP)','Architecture']},
+  {name:'School of Life Science',short:'SLS',disciplines:['Biotechnology & Genetic Engineering (BGE)','Pharmacy','Environmental Science','Fisheries & Marine Resource Technology (FMRT)','Forestry & Wood Technology (FWT)','Agrotechnology','Soil, Water and Environment (SWE)']},
+  {name:'School of Management and Business Administration',short:'MBA',disciplines:['Business Administration (BAD)','Human Resource Management (HRM)']},
+  {name:'School of Social Sciences',short:'SSS',disciplines:['Economics','Sociology','Development Studies','Mass Communication & Journalism (MCJ)']},
+  {name:'School of Arts & Humanities',short:'SAH',disciplines:['Bangla','English','History & Civilization']},
+  {name:'School of Law',short:'LAW',disciplines:['Law & Justice']},
+  {name:'School of Fine Arts',short:'SFA',disciplines:['Fine Arts','Drawing & Painting','Sculpture','Printmaking']},
+  {name:'School of Education',short:'EDU',disciplines:['Education']},
+];
+
+const GRADING = [
+  {min:80,max:100,grade:'A+',gp:4.00,cls:'g-ap',color:'#4ade80'},
+  {min:75,max:79, grade:'A', gp:3.75,cls:'g-a', color:'#38BDF8'},
+  {min:70,max:74, grade:'A-',gp:3.50,cls:'g-am',color:'#60a5fa'},
+  {min:65,max:69, grade:'B+',gp:3.25,cls:'g-bp',color:'#a78bfa'},
+  {min:60,max:64, grade:'B', gp:3.00,cls:'g-b', color:'#fbbf24'},
+  {min:55,max:59, grade:'B-',gp:2.75,cls:'g-bm',color:'#fb923c'},
+  {min:50,max:54, grade:'C+',gp:2.50,cls:'g-cp',color:'#f97316'},
+  {min:45,max:49, grade:'C', gp:2.25,cls:'g-c', color:'#eab308'},
+  {min:40,max:44, grade:'D', gp:2.00,cls:'g-d', color:'#f87171'},
+  {min:0, max:39, grade:'F', gp:0.00,cls:'g-f', color:'#fca5a5'},
+];
+
+const GRADE_MAP = {'A+':4.00,'A':3.75,'A-':3.50,'B+':3.25,'B':3.00,'B-':2.75,'C+':2.50,'C':2.25,'D':2.00,'F':0.00};
+
+const FAQ = [
+  {q:'How is carry marks calculated?',a:'Carry = (Best A + Best B) / 2 + Attendance, where Best A = max(CT1, CT2) and Best B = max(CT3, CT4). Carry is out of 40 marks.'},
+  {q:'What is the minimum marks to pass?',a:'Students must score at least 40 out of 100 (Grade D, GP 2.00) to pass a course. Scoring below 40 results in Grade F (GP 0.00).'},
+  {q:'How is CGPA calculated?',a:'CGPA = Σ(Semester GPA × Semester Credits) ÷ Σ(Total Credits earned). It reflects your cumulative academic performance across all semesters.'},
+  {q:"What is Dean's List?",a:"Students who achieve a CGPA of 3.75 or above are typically eligible for the Dean's List, recognizing outstanding academic achievement."},
+  {q:'Can I retake a course to improve my GPA?',a:'KU policies allow course retakes in some circumstances. The new grade typically replaces the old one. Check with your respective discipline office for details.'},
+  {q:'How many credit hours are in a typical semester?',a:'A typical semester at KU carries 15–21 credit hours, depending on the discipline and year of study.'},
+];
+
+function getGrade(m){return GRADING.find(g=>m>=g.min&&m<=g.max)||GRADING[GRADING.length-1];}
+function isDark(){return !document.body.classList.contains('light');}
+
+/* =========================================
+   NAVIGATION
+   ========================================= */
+function nav(page,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const pg=document.getElementById('page-'+page);
+  if(pg) pg.classList.add('on');
+  if(btn){btn.classList.add('on');}
+  else{
+    document.querySelectorAll('.nav-btn').forEach(b=>{
+      if(b.textContent.toLowerCase().includes(page.slice(0,5))) b.classList.add('on');
+    });
+  }
+  // sync mobile nav
+  document.querySelectorAll('.mob-btn').forEach(b=>{
+    const txt=b.textContent.toLowerCase();
+    if(txt.includes(page.slice(0,4))) b.classList.add('on');
+    else b.classList.remove('on');
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(page==='dashboard') refreshDashboard();
+}
+
+function setMob(btn){
+  document.querySelectorAll('.mob-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+/* =========================================
+   THEME
+   ========================================= */
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  document.getElementById('themeBtn').textContent=isDark()?'☀️':'🌙';
+  localStorage.setItem('cgcal_theme', isDark()?'dark':'light');
+  if(theoryChartInst) drawTheoryChart();
+  if(gpaChartInst) drawGPAChart();
+  if(cgpaChartInst) drawCGPAChart();
+}
+
+function restoreTheme(){
+  const saved=localStorage.getItem('cgcal_theme');
+  if(saved==='light'){
+    document.body.classList.add('light');
+    const btn=document.getElementById('themeBtn');
+    if(btn) btn.textContent='🌙';
+  }
+}
+
+/* =========================================
+   TOAST
+   ========================================= */
+let toastTimer=null;
+function showToast(msg,type='success'){
+  const toast=document.getElementById('toast');
+  if(!toast) return;
+  if(toastTimer) clearTimeout(toastTimer);
+  toast.textContent=msg;
+  toast.className=`show toast-${type}`;
+  toastTimer=setTimeout(()=>{toast.className='';},3500);
+}
+
+/* =========================================
+   PROFILE
+   ========================================= */
+function openProfileModal(){
+  const saved=getSavedProfile();
+  if(saved){
+    document.getElementById('profileName').value=saved.name||'';
+    document.getElementById('profileID').value=saved.studentId||'';
+    document.getElementById('profileDisc').value=saved.discipline||'';
+    document.getElementById('profileBatch').value=saved.batch||'';
+    document.getElementById('profileTotalCredits').value=saved.totalCredits||'';
+  }
+  document.getElementById('profileModal').classList.add('open');
+}
+function closeProfileModal(){
+  document.getElementById('profileModal').classList.remove('open');
+}
+document.getElementById('profileModal').addEventListener('click',function(e){
+  if(e.target===this) closeProfileModal();
+});
+function getSavedProfile(){
+  const raw=localStorage.getItem('cgcal_profile');
+  if(!raw) return null;
+  try{return JSON.parse(raw);}catch{return null;}
+}
+function saveProfile(){
+  const name=document.getElementById('profileName').value.trim();
+  if(!name){showToast('Please enter at least your name.','error');return;}
+  const profile={
+    name,
+    studentId:document.getElementById('profileID').value.trim(),
+    discipline:document.getElementById('profileDisc').value.trim(),
+    batch:document.getElementById('profileBatch').value.trim(),
+    totalCredits:parseInt(document.getElementById('profileTotalCredits').value)||160,
+  };
+  localStorage.setItem('cgcal_profile',JSON.stringify(profile));
+  closeProfileModal();
+  updateProfileBadge();
+  renderProgressTracker();
+  showToast(`✅ Profile saved — Welcome, ${name}!`,'success');
+}
+function clearProfile(){
+  localStorage.removeItem('cgcal_profile');
+  closeProfileModal();
+  updateProfileBadge();
+  showToast('Profile cleared.','success');
+}
+function updateProfileBadge(){
+  const profile=getSavedProfile();
+  const badge=document.getElementById('profileBadge');
+  const iconBtn=document.getElementById('profileBtn');
+  if(profile&&profile.name){
+    badge.style.display='flex';
+    iconBtn.style.display='none';
+    const shortName=profile.name.length>18?profile.name.slice(0,16)+'…':profile.name;
+    document.getElementById('profileBadgeText').textContent=shortName;
+  } else {
+    badge.style.display='none';
+    iconBtn.style.display='';
+  }
+}
+
+/* =========================================
+   HISTORY
+   ========================================= */
+function getHistory(){
+  const raw=localStorage.getItem('cgcal_history');
+  if(!raw) return [];
+  try{return JSON.parse(raw);}catch{return [];}
+}
+function saveHistory(entries){localStorage.setItem('cgcal_history',JSON.stringify(entries));}
+function addHistoryEntry(entry){
+  const entries=getHistory();
+  entries.unshift({id:Date.now(),...entry,date:new Date().toLocaleDateString('en-BD',{day:'2-digit',month:'short',year:'numeric'}),timestamp:Date.now()});
+  if(entries.length>50) entries.pop();
+  saveHistory(entries);
+  renderHistory();
+}
+function saveGPAToHistory(){
+  const valEl=document.getElementById('gpaVal');
+  const credsEl=document.getElementById('gpaTotalCreds');
+  if(!valEl||valEl.textContent==='—'){showToast('No GPA result to save. Run the calculation first.','error');return;}
+  addHistoryEntry({type:'gpa',label:'Semester GPA',value:parseFloat(valEl.textContent),credits:parseInt(credsEl.textContent)||0});
+  showToast('✅ GPA saved to history!','success');
+}
+function saveCGPAToHistory(){
+  const valEl=document.getElementById('cgpaVal');
+  const credsEl=document.getElementById('cgpaCredits');
+  if(!valEl||valEl.textContent==='—'){showToast('No CGPA result to save. Run the calculation first.','error');return;}
+  addHistoryEntry({type:'cgpa',label:'Cumulative CGPA',value:parseFloat(valEl.textContent),credits:parseInt(credsEl.textContent)||0});
+  showToast('✅ CGPA saved to history!','success');
+}
+function clearHistory(){
+  if(!getHistory().length){showToast('History is already empty.','error');return;}
+  localStorage.removeItem('cgcal_history');
+  renderHistory();
+  showToast('History cleared.','success');
+}
+function deleteHistoryEntry(id){
+  saveHistory(getHistory().filter(e=>e.id!==id));
+  renderHistory();
+}
+function renderHistory(){
+  const entries=getHistory();
+  const container=document.getElementById('historyContent');
+  if(!container) return;
+  if(!entries.length){
+    container.innerHTML='<div class="hist-empty">No calculations saved yet. Use the GPA or CGPA calculator and save a result.</div>';
+    return;
+  }
+  const rows=entries.map(e=>{
+    const gpaColor=e.value>=3.75?'#4ade80':e.value>=3.50?'#38BDF8':e.value>=3.00?'#a78bfa':e.value>=2.50?'#fbbf24':'#f87171';
+    const badge=e.type==='cgpa'
+      ?'<span class="pill" style="background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)">CGPA</span>'
+      :'<span class="pill" style="background:rgba(56,189,248,.15);color:#38BDF8;border:1px solid rgba(56,189,248,.3)">GPA</span>';
+    return `<tr><td style="color:var(--text2)">${e.date}</td><td>${badge}</td><td style="font-weight:800;font-size:16px;color:${gpaColor}">${e.value.toFixed(2)}</td><td style="color:var(--text2)">${e.credits} cr</td><td><button class="btn btn-danger btn-xs" onclick="deleteHistoryEntry(${e.id})">✕</button></td></tr>`;
+  }).join('');
+  container.innerHTML=`<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Date</th><th>Type</th><th>Score</th><th>Credits</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+/* =========================================
+   TARGET GPA CALCULATOR
+   ========================================= */
+function calculateTargetGPA(){
+  const currentCGPA=parseFloat(document.getElementById('tgCurrentCGPA').value);
+  const currentCredits=parseFloat(document.getElementById('tgCurrentCredits').value);
+  const targetCGPA=parseFloat(document.getElementById('tgTargetCGPA').value);
+  const nextCredits=parseFloat(document.getElementById('tgNextCredits').value);
+  const container=document.getElementById('targetGPAResult');
+  if([currentCGPA,currentCredits,targetCGPA,nextCredits].some(isNaN)){container.innerHTML='';return;}
+  if(currentCGPA>4||targetCGPA>4||currentCGPA<0||targetCGPA<0){container.innerHTML='<div class="fb fb-re">⚠️ GPA values must be between 0.00 and 4.00.</div>';return;}
+  const requiredGPA=(targetCGPA*(currentCredits+nextCredits)-currentCGPA*currentCredits)/nextCredits;
+  let verdictClass,verdictLabel,verdictIcon;
+  if(requiredGPA>4.00){verdictClass='verdict-impossible';verdictLabel='Not achievable in one semester';verdictIcon='❌';}
+  else if(requiredGPA>=3.75){verdictClass='verdict-hard';verdictLabel='Very challenging — needs A+ performance';verdictIcon='🔥';}
+  else if(requiredGPA>=3.00){verdictClass='verdict-hard';verdictLabel='Challenging but achievable';verdictIcon='💪';}
+  else if(requiredGPA<0){verdictClass='verdict-easy';verdictLabel='Already above target!';verdictIcon='🏆';}
+  else{verdictClass='verdict-easy';verdictLabel='Achievable with good effort';verdictIcon='✅';}
+  const diff=(requiredGPA-currentCGPA).toFixed(2);
+  const diffLabel=requiredGPA>currentCGPA?`+${diff} above current CGPA`:diff==='0.00'?'Same as current CGPA':`${diff} (you have room to score lower)`;
+  const displayGPA=requiredGPA>4.00?'>4.00':requiredGPA<0?'N/A':requiredGPA.toFixed(2);
+  container.innerHTML=`<div class="target-result-visual">
+    <div style="font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:6px">Required GPA Next Semester</div>
+    <div class="target-gpa-big">${displayGPA}</div>
+    <div><span class="target-gpa-verdict ${verdictClass}">${verdictIcon} ${verdictLabel}</span></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;text-align:center">
+      <div style="background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Current CGPA</div><div style="font-size:18px;font-weight:800;color:var(--text)">${currentCGPA.toFixed(2)}</div></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Target CGPA</div><div style="font-size:18px;font-weight:800;color:var(--sky)">${targetCGPA.toFixed(2)}</div></div>
+      <div style="background:var(--bg);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">Difference</div><div style="font-size:14px;font-weight:700;color:var(--amber)">${diffLabel}</div></div>
+    </div>
+  </div>`;
+}
+
+/* =========================================
+   PROGRESS TRACKER
+   ========================================= */
+function renderProgressTracker(){
+  const container=document.getElementById('progressTrackerContent');
+  if(!container) return;
+  let done=parseFloat(document.getElementById('progressCredsDone').value);
+  let total=parseFloat(document.getElementById('progressCredsTotal').value);
+  if(isNaN(total)){const p=getSavedProfile();if(p&&p.totalCredits) total=p.totalCredits;}
+  if(isNaN(done)||isNaN(total)||total<=0){
+    container.innerHTML='<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">Enter credits above to see your progress.</div>';
+    return;
+  }
+  const pct=Math.min(100,(done/total*100));
+  const remaining=Math.max(0,total-done);
+  const fillColor=pct>=80?'#22C55E':pct>=50?'#38BDF8':pct>=25?'#F59E0B':'#A78BFA';
+  let standLabel='Getting Started';
+  if(pct>=100) standLabel='🎓 Graduation Ready!';
+  else if(pct>=75) standLabel='Senior Year';
+  else if(pct>=50) standLabel='Midway Through';
+  else if(pct>=25) standLabel='Building Momentum';
+  const milestones=[{pct:25,label:'25%<br>Year 1'},{pct:50,label:'50%<br>Year 2'},{pct:75,label:'75%<br>Year 3'},{pct:100,label:'100%<br>Done'}];
+  const milestonesHTML=milestones.map(m=>`<div class="milestone" style="left:${m.pct}%">${m.label}</div>`).join('');
+  container.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+      <span style="font-size:13px;color:var(--text2);font-weight:600">${standLabel}</span>
+      <span style="font-size:22px;font-weight:900;color:${fillColor}">${pct.toFixed(1)}%</span>
+    </div>
+    <div class="progress-track-bar"><div class="progress-track-fill" style="width:${pct.toFixed(1)}%;background:linear-gradient(90deg,${fillColor}99,${fillColor})"></div></div>
+    <div class="milestone-markers">${milestonesHTML}</div>
+    <div style="margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+      <div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Completed</div><div style="font-size:20px;font-weight:800;color:${fillColor}">${done}</div><div style="font-size:10px;color:var(--text3)">credits</div></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Remaining</div><div style="font-size:20px;font-weight:800;color:var(--amber)">${remaining}</div><div style="font-size:10px;color:var(--text3)">credits</div></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">Required Total</div><div style="font-size:20px;font-weight:800;color:var(--text)">${total}</div><div style="font-size:10px;color:var(--text3)">credits</div></div>
+    </div>`;
+}
+
+/* =========================================
+   SCHOOL SELECTOR
+   ========================================= */
+function initHomeSelectors(){
+  const sel=document.getElementById('homeSchool');
+  SCHOOLS.forEach((s,i)=>{const o=document.createElement('option');o.value=i;o.textContent=s.name;sel.appendChild(o);});
+}
+function updateHomeDisc(){
+  const idx=parseInt(document.getElementById('homeSchool').value);
+  const disc=document.getElementById('homeDisc');
+  disc.innerHTML='<option value="">— Select Discipline —</option>';
+  const box=document.getElementById('schoolInfoBox');
+  if(!isNaN(idx)&&SCHOOLS[idx]){
+    SCHOOLS[idx].disciplines.forEach(d=>{const o=document.createElement('option');o.textContent=d;disc.appendChild(o);});
+    document.getElementById('schoolInfoText').textContent=`${SCHOOLS[idx].name} — ${SCHOOLS[idx].disciplines.length} disciplines`;
+    box.style.display='flex';
+  } else {box.style.display='none';}
+}
+
+/* =========================================
+   THEORY CALCULATOR
+   ========================================= */
+let theoryChartInst=null;
+
+function calcTheory(){
+  const v1=document.getElementById('ct1').value;
+  const v2=document.getElementById('ct2').value;
+  const v3=document.getElementById('ct3').value;
+  const v4=document.getElementById('ct4').value;
+  const ct1=parseFloat(v1)||0,ct2=parseFloat(v2)||0,ct3=parseFloat(v3)||0,ct4=parseFloat(v4)||0;
+  const att=parseFloat(document.getElementById('attend').value)||0;
+  if(v1===''&&v2===''&&v3===''&&v4===''&&!document.getElementById('attend').value){
+    document.getElementById('theoryResult').style.display='none';
+    document.getElementById('theoryEmpty').style.display='block';
+    return;
+  }
+  document.getElementById('theoryResult').style.display='block';
+  document.getElementById('theoryEmpty').style.display='none';
+  const bestA=Math.max(ct1,ct2),bestB=Math.max(ct3,ct4);
+  const carry=parseFloat(((bestA+bestB)/2+att).toFixed(2));
+  document.getElementById('bestA').textContent=bestA.toFixed(1);
+  document.getElementById('bestB').textContent=bestB.toFixed(1);
+  document.getElementById('carryVal').textContent=carry.toFixed(2);
+  document.getElementById('baDisp').textContent=bestA.toFixed(1);
+  document.getElementById('bbDisp').textContent=bestB.toFixed(1);
+  const pct=Math.min(carry/40*100,100);
+  document.getElementById('carryBar').style.width=pct+'%';
+  document.getElementById('carryPct').textContent=pct.toFixed(1)+'%';
+  let fb='',fbCls='fb-bl';
+  if(carry>=38){fb='🔥 Outstanding! Your carry marks are excellent.';fbCls='fb-gr';}
+  else if(carry>=35){fb='✅ Very Good! You have a strong carry.';fbCls='fb-bl';}
+  else if(carry>=30){fb='👍 Good. On track for a decent grade.';fbCls='fb-bl';}
+  else if(carry>=25){fb='⚠️ Needs Improvement. Focus hard on the final exam.';fbCls='fb-am';}
+  else{fb='❌ Very Low Carry Marks. You need an exceptionally strong final exam to pass.';fbCls='fb-re';}
+  document.getElementById('carryFb').innerHTML=`<div class="fb ${fbCls}">${fb}</div>`;
+  document.getElementById('formulaBreakdown').innerHTML=`
+    <div class="need-card"><div class="need-val" style="color:#4ade80">${bestA.toFixed(1)}</div><div class="need-lbl">Best A / 15</div></div>
+    <div class="need-card"><div class="need-val" style="color:#c4b5fd">${bestB.toFixed(1)}</div><div class="need-lbl">Best B / 15</div></div>
+    <div class="need-card"><div class="need-val" style="color:#fbbf24">${att.toFixed(1)}</div><div class="need-lbl">Attendance / 10</div></div>
+    <div class="need-card" style="border-color:rgba(56,189,248,.4)"><div class="need-val">${carry.toFixed(2)}</div><div class="need-lbl">Carry / 40</div></div>`;
+  calcPrediction();
+}
+
+function calcPrediction(){
+  const carry=parseFloat(document.getElementById('carryVal').textContent)||0;
+  const target=document.getElementById('targetGrade').value;
+  const gradeMinMap={'A+':80,'A':75,'A-':70,'B+':65,'B':60,'B-':55,'C+':50,'C':45,'D':40};
+  const minTotal=gradeMinMap[target]||40;
+  const minFinal=Math.max(0,minTotal-carry);
+  const possible=minFinal<=60;
+  const gp=GRADE_MAP[target]||0;
+  const gInfo=GRADING.find(g=>g.grade===target);
+  document.getElementById('targetResultCard').innerHTML=`
+    <div class="need-card" style="${possible?'border-color:rgba(34,197,94,.4)':'border-color:rgba(239,68,68,.4)'}">
+      <div class="need-val" style="color:${possible?'#4ade80':'#f87171'}">${minFinal.toFixed(0)} / 60</div>
+      <div class="need-lbl">Min Final Marks Needed</div>
+      <div style="margin-top:6px"><span class="gbadge ${gInfo?gInfo.cls:''}" style="font-size:13px">${target}</span></div>
+    </div>`;
+  const pFb=possible
+    ?`<div class="fb fb-gr">✅ Achievable! Score at least <strong>${minFinal.toFixed(0)}</strong> out of 60 in the final to get <strong>${target}</strong> (GP: ${gp.toFixed(2)}).</div>`
+    :`<div class="fb fb-re">⚠️ Grade ${target} requires ${minTotal} total, but your carry (${carry}) + max final (60) = ${(carry+60).toFixed(1)} — insufficient. Choose a lower target.</div>`;
+  document.getElementById('predFeedback').innerHTML=pFb;
+  let rows='';
+  GRADING.filter(g=>g.grade!=='F').forEach(g=>{
+    const need=Math.max(0,g.min-carry);
+    const ok=need<=60;
+    const barW=ok?Math.round((60-need)/60*100):0;
+    rows+=`<div class="pred-row">
+      <span class="gbadge ${g.cls}" style="font-size:12px;padding:3px 10px;min-width:42px;justify-content:center">${g.grade}</span>
+      <span style="flex:1;color:var(--text2)">Need <strong style="color:var(--text)">${need.toFixed(0)}</strong>/60 → Total ≥ ${g.min}</span>
+      <div style="width:80px;background:var(--bg3);border-radius:99px;height:6px;overflow:hidden"><div style="width:${barW}%;height:100%;background:${ok?g.color:'#374151'};border-radius:99px;transition:width .5s"></div></div>
+      <span style="font-size:11px;font-weight:700;min-width:52px;text-align:right;color:${ok?g.color:'var(--text3)'}">${ok?'✓ Possible':'✗ Too High'}</span>
+    </div>`;
+  });
+  document.getElementById('gradeRows').innerHTML=rows;
+  drawTheoryChart(carry);
+}
+
+function drawTheoryChart(carry){
+  carry=carry||parseFloat(document.getElementById('carryVal').textContent)||0;
+  const ctx=document.getElementById('theoryChart');
+  if(!ctx) return;
+  if(theoryChartInst){theoryChartInst.destroy();theoryChartInst=null;}
+  const labels=GRADING.filter(g=>g.grade!=='F').map(g=>g.grade);
+  const needed=GRADING.filter(g=>g.grade!=='F').map(g=>Math.max(0,g.min-carry));
+  const colors=GRADING.filter(g=>g.grade!=='F').map(g=>g.color);
+  theoryChartInst=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Min Final Marks Needed',data:needed,backgroundColor:colors.map(c=>c+'99'),borderColor:colors,borderWidth:1.5,borderRadius:5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:(c)=>`Need ${c.raw}/60 in final`}}},scales:{y:{max:65,min:0,grid:{color:isDark()?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)'},ticks:{color:isDark()?'#64748B':'#94A3B8',font:{size:11}}},x:{grid:{display:false},ticks:{color:isDark()?'#94A3B8':'#475569',font:{size:12,weight:'bold'}}}}}
+  });
+}
+
+function resetTheory(){
+  ['ct1','ct2','ct3','ct4','attend'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('theoryResult').style.display='none';
+  document.getElementById('theoryEmpty').style.display='block';
+  document.getElementById('bestA').textContent='—';
+  document.getElementById('bestB').textContent='—';
+}
+
+/* =========================================
+   LAB CALCULATOR
+   ========================================= */
+function calcLab(){
+  const aStr=document.getElementById('labA').value;
+  const vStr=document.getElementById('labV').value;
+  const fStr=document.getElementById('labF').value;
+  const a=parseFloat(aStr)||0,v=parseFloat(vStr)||0,f=parseFloat(fStr)||0;
+  if(!aStr&&!vStr&&!fStr){
+    document.getElementById('labResult').style.display='none';
+    document.getElementById('labEmpty').style.display='block';
+    document.getElementById('labBreakdownBars').innerHTML='<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Enter marks to see breakdown</div>';
+    return;
+  }
+  document.getElementById('labResult').style.display='block';
+  document.getElementById('labEmpty').style.display='none';
+  const total=a+v+f;
+  const g=getGrade(total);
+  document.getElementById('labTotal').textContent=total.toFixed(0);
+  document.getElementById('labGradeBadge').innerHTML=`<span class="gbadge ${g.cls}">${g.grade}</span>`;
+  document.getElementById('labGP').textContent=g.gp.toFixed(2);
+  const pct=Math.min(total,100);
+  const barCls=pct>=75?'pf-gr':pct>=60?'pf-bl':pct>=50?'pf-am':'pf-re';
+  document.getElementById('labBar').className='pfill '+barCls;
+  document.getElementById('labBar').style.width=pct+'%';
+  document.getElementById('labPctLbl').textContent=pct+'%';
+  let fb='',fbCls='fb-bl';
+  if(total>=80){fb='🔥 Outstanding lab performance!';fbCls='fb-gr';}
+  else if(total>=70){fb='⭐ Excellent performance in lab!';fbCls='fb-bl';}
+  else if(total>=60){fb='👍 Good lab performance.';fbCls='fb-bl';}
+  else if(total>=50){fb='⚠️ Average. Review lab procedures and viva prep.';fbCls='fb-am';}
+  else if(total>=40){fb='🔴 Below average. Focus on improving viva and attendance.';fbCls='fb-re';}
+  else{fb='❌ Failing marks. Seek help from lab instructors immediately.';fbCls='fb-re';}
+  document.getElementById('labFb').innerHTML=`<div class="fb ${fbCls}">${fb}</div>`;
+  const items=[{lbl:'Attendance',val:a,max:10,color:'#4ade80'},{lbl:'Viva',val:v,max:30,color:'#38BDF8'},{lbl:'Final Exam',val:f,max:60,color:'#a78bfa'}];
+  document.getElementById('labBreakdownBars').innerHTML=items.map(i=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="font-weight:600">${i.lbl}</span><span style="color:var(--text2)">${i.val.toFixed(0)} / ${i.max}</span></div>
+      <div class="ptrack"><div class="pfill" style="width:${Math.min(i.val/i.max*100,100)}%;background:${i.color}"></div></div>
+    </div>`).join('');
+}
+
+function resetLab(){
+  ['labA','labV','labF'].forEach(id=>{document.getElementById(id).value='';});
+  calcLab();
+}
+
+/* =========================================
+   GPA CALCULATOR
+   ========================================= */
+let courses=[];
+let gpaChartInst=null;
+
+function addCourse(){courses.push({name:'',credits:3,grade:'A'});renderCourses();}
+function removeCourse(i){courses.splice(i,1);renderCourses();}
+function resetGPA(){courses=[];renderCourses();}
+
+const GRADE_OPTS=Object.keys(GRADE_MAP).map(g=>`<option value="${g}">${g} — ${GRADE_MAP[g].toFixed(2)}</option>`).join('');
+
+function renderCourses(){
+  const tbody=document.getElementById('courseBody');
+  const empty=document.getElementById('gpaEmpty');
+  const res=document.getElementById('gpaResult');
+  if(!courses.length){tbody.innerHTML='';empty.style.display='block';res.style.display='none';return;}
+  empty.style.display='none';
+  tbody.innerHTML=courses.map((c,i)=>{
+    const gp=GRADE_MAP[c.grade]||0;
+    const wt=(gp*(c.credits||0)).toFixed(2);
+    return `<tr>
+      <td><input type="text" style="background:transparent;border:none;color:var(--text);font-size:13px;padding:4px;outline:none;border-bottom:1px solid transparent;font-family:inherit;width:100%" placeholder="e.g. CSE 101" value="${c.name||''}" oninput="courses[${i}].name=this.value" onfocus="this.style.borderBottomColor='var(--blue)'" onblur="this.style.borderBottomColor='transparent'"></td>
+      <td><input type="number" style="width:70px" min="1" max="6" value="${c.credits||3}" oninput="courses[${i}].credits=parseFloat(this.value)||0;calcGPA()"></td>
+      <td><select style="width:100%" onchange="courses[${i}].grade=this.value;renderCourses()">${GRADE_OPTS.replace(`value="${c.grade}"`,`value="${c.grade}" selected`)}</select></td>
+      <td style="font-weight:700;color:var(--sky)">${gp.toFixed(2)}</td>
+      <td style="font-weight:600;color:var(--amber)">${wt}</td>
+      <td><button class="btn btn-danger btn-xs" onclick="removeCourse(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+  calcGPA();
+}
+
+function calcGPA(){
+  let totalCreds=0,totalGP=0;
+  const gradeCounts={};
+  courses.forEach(c=>{
+    if(c.credits>0){totalCreds+=c.credits;totalGP+=c.credits*(GRADE_MAP[c.grade]||0);}
+    gradeCounts[c.grade]=(gradeCounts[c.grade]||0)+1;
+  });
+  if(!totalCreds){document.getElementById('gpaResult').style.display='none';return;}
+  const gpa=totalGP/totalCreds;
+  document.getElementById('gpaVal').textContent=gpa.toFixed(2);
+  document.getElementById('gpaTotalCreds').textContent=totalCreds;
+  document.getElementById('gpaTotalGP').textContent=totalGP.toFixed(2);
+  document.getElementById('gpaCourseCount').textContent=courses.length;
+  let st='',stCls='fb-bl';
+  if(gpa>=3.75){st="🏆 Dean's List — Exceptional semester!";stCls='fb-gr';}
+  else if(gpa>=3.50){st='⭐ Excellent academic performance this semester.';}
+  else if(gpa>=3.00){st='✅ Very good performance. Keep pushing forward!';}
+  else if(gpa>=2.50){st='👍 Good standing. Aim higher next semester!';stCls='fb-am';}
+  else if(gpa>=2.00){st='⚠️ Satisfactory. You need to improve significantly.';stCls='fb-am';}
+  else{st='❌ Academic probation risk. Seek academic counseling immediately.';stCls='fb-re';}
+  document.getElementById('gpaStanding').innerHTML=`<div class="fb ${stCls}">${st}</div>`;
+  document.getElementById('gpaResult').style.display='block';
+  drawGPAChart(gradeCounts);
+}
+
+function drawGPAChart(gradeCounts){
+  const ctx=document.getElementById('gpaChart');if(!ctx) return;
+  if(gpaChartInst){gpaChartInst.destroy();gpaChartInst=null;}
+  const labels=Object.keys(gradeCounts);
+  const data=Object.values(gradeCounts);
+  const colors=labels.map(g=>{const info=GRADING.find(r=>r.grade===g);return info?info.color+'cc':'#64748B';});
+  gpaChartInst=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels,datasets:[{data,backgroundColor:colors,borderColor:isDark()?'#1E293B':'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:isDark()?'#94A3B8':'#475569',font:{size:12},padding:12,boxWidth:12,boxHeight:12}},tooltip:{callbacks:{label:(c)=>`${c.label}: ${c.raw} course(s)`}}}}
+  });
+}
+
+/* =========================================
+   CGPA CALCULATOR
+   ========================================= */
+let semesters=[];
+let cgpaChartInst=null;
+
+function addSemester(){semesters.push({name:`Semester ${semesters.length+1}`,gpa:'',credits:''});renderSemesters();}
+function removeSemester(i){semesters.splice(i,1);renderSemesters();}
+function resetCGPA(){semesters=[];renderSemesters();}
+
+function renderSemesters(){
+  const list=document.getElementById('semesterList');
+  if(!semesters.length){
+    list.innerHTML='<div style="text-align:center;padding:32px;color:var(--text2)"><div style="font-size:36px;margin-bottom:10px">🗓️</div><div style="font-weight:600;margin-bottom:5px">No semesters added</div><div style="font-size:13px">Click "+ Add Semester" to begin.</div></div>';
+    document.getElementById('cgpaResult').style.display='none';
+    return;
+  }
+  list.innerHTML=semesters.map((s,i)=>`
+    <div class="sem-row">
+      <input type="text" placeholder="e.g. Year 1, Semester 1" value="${s.name||''}" oninput="semesters[${i}].name=this.value;calcCGPA()">
+      <input type="number" placeholder="GPA" min="0" max="4" step="0.01" value="${s.gpa||''}" oninput="semesters[${i}].gpa=parseFloat(this.value)||0;calcCGPA()">
+      <input type="number" placeholder="Credits" min="1" max="30" value="${s.credits||''}" oninput="semesters[${i}].credits=parseFloat(this.value)||0;calcCGPA()">
+      <button class="btn btn-danger btn-xs" onclick="removeSemester(${i})">✕</button>
+    </div>`).join('');
+  calcCGPA();
+}
+
+function calcCGPA(){
+  let totalGP=0,totalCreds=0,count=0;
+  semesters.forEach(s=>{if(s.gpa>0&&s.credits>0){totalGP+=s.gpa*s.credits;totalCreds+=s.credits;count++;}});
+  if(!totalCreds){document.getElementById('cgpaResult').style.display='none';return;}
+  const cgpa=totalGP/totalCreds;
+  document.getElementById('cgpaVal').textContent=cgpa.toFixed(2);
+  document.getElementById('cgpaCredits').textContent=totalCreds;
+  document.getElementById('cgpaSems').textContent=count;
+  let std='',stdClr='var(--sky)',fbTxt='',fbCls='fb-bl';
+  if(cgpa>=3.75){std="🏆 Dean's List";stdClr='#4ade80';fbTxt="Congratulations! You are on the Dean's List.";fbCls='fb-gr';}
+  else if(cgpa>=3.50){std='⭐ Excellent';stdClr='var(--sky)';fbTxt='Excellent cumulative performance!';}
+  else if(cgpa>=3.00){std='✅ Very Good';stdClr='var(--purple)';fbTxt='Very good academic standing.';}
+  else if(cgpa>=2.50){std='👍 Good';stdClr='var(--amber)';fbTxt='Good standing. Keep improving!';fbCls='fb-am';}
+  else if(cgpa>=2.00){std='⚠️ Satisfactory';stdClr='var(--amber)';fbTxt='Satisfactory. Significant improvement needed.';fbCls='fb-am';}
+  else{std='❌ Probation';stdClr='var(--red)';fbTxt='Academic probation risk. Seek counseling immediately.';fbCls='fb-re';}
+  document.getElementById('cgpaStandBadge').innerHTML=`<span style="color:${stdClr}">${std}</span>`;
+  document.getElementById('cgpaStandFb').innerHTML=`<div class="fb ${fbCls}">${fbTxt}</div>`;
+  document.getElementById('cgpaResult').style.display='block';
+  drawCGPAChart();
+  calcFuture();
+}
+
+function drawCGPAChart(){
+  const ctx=document.getElementById('cgpaChart');if(!ctx) return;
+  if(cgpaChartInst){cgpaChartInst.destroy();cgpaChartInst=null;}
+  const validSems=semesters.filter(s=>s.gpa>0&&s.credits>0);
+  const labels=validSems.map(s=>s.name);
+  const gpas=validSems.map(s=>parseFloat(s.gpa));
+  cgpaChartInst=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{label:'Semester GPA',data:gpas,borderColor:'#38BDF8',backgroundColor:'rgba(56,189,248,.12)',borderWidth:2.5,pointBackgroundColor:'#38BDF8',pointRadius:5,pointHoverRadius:7,fill:true,tension:.3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:4.2,grid:{color:isDark()?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)'},ticks:{color:isDark()?'#64748B':'#94A3B8',font:{size:11}}},x:{grid:{display:false},ticks:{color:isDark()?'#94A3B8':'#475569',font:{size:11}}}}}
+  });
+}
+
+function calcFuture(){
+  const fgpa=parseFloat(document.getElementById('futureGPA').value)||0;
+  const fcreds=parseFloat(document.getElementById('futureCreds').value)||0;
+  const res=document.getElementById('futureResult');
+  if(!fgpa||!fcreds){res.innerHTML='';return;}
+  let totalGP=0,totalCreds=0;
+  semesters.forEach(s=>{if(s.gpa>0&&s.credits>0){totalGP+=s.gpa*s.credits;totalCreds+=s.credits;}});
+  totalGP+=fgpa*fcreds;totalCreds+=fcreds;
+  const newCGPA=(totalGP/totalCreds).toFixed(2);
+  res.innerHTML=`<div class="fb fb-pu">📈 With a GPA of <strong>${fgpa.toFixed(2)}</strong> over <strong>${fcreds}</strong> credits next semester, your projected CGPA would be <strong style="font-size:16px">${newCGPA}</strong></div>`;
+}
+
+/* =========================================
+   DASHBOARD
+   ========================================= */
+function refreshDashboard(){
+  const dash=document.getElementById('dashboardContent');
+  let totalCreds=0,totalGP=0,semCount=0;
+  semesters.forEach(s=>{if(s.gpa>0&&s.credits>0){totalGP+=s.gpa*s.credits;totalCreds+=s.credits;semCount++;}});
+  const cgpa=totalCreds?totalGP/totalCreds:null;
+  let gpaCreds=0,gpaGP=0;
+  courses.forEach(c=>{if(c.credits>0){gpaCreds+=c.credits;gpaGP+=c.credits*(GRADE_MAP[c.grade]||0);}});
+  const gpa=gpaCreds?gpaGP/gpaCreds:null;
+  const carry=parseFloat(document.getElementById('carryVal').textContent)||null;
+  if(!cgpa&&!gpa&&!carry){
+    dash.innerHTML=`<div class="card" style="text-align:center;padding:48px;color:var(--text2)">
+      <div style="font-size:48px;margin-bottom:14px">📈</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:8px">No data yet</div>
+      <div style="font-size:14px;max-width:400px;margin:0 auto 20px">Use the Theory, GPA, and CGPA calculators first, then come back to see your dashboard.</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="nav('theory',null)">Start with Theory</button>
+        <button class="btn btn-ghost btn-sm" onclick="nav('gpa',null)">GPA Calculator</button>
+      </div>
+    </div>`;
+    return;
+  }
+  let standLabel='—',standColor='var(--text2)';
+  if(cgpa){
+    if(cgpa>=3.75){standLabel="Dean's List";standColor='#4ade80';}
+    else if(cgpa>=3.50){standLabel='Excellent';standColor='#38BDF8';}
+    else if(cgpa>=3.00){standLabel='Very Good';standColor='#a78bfa';}
+    else if(cgpa>=2.50){standLabel='Good';standColor='#fbbf24';}
+    else if(cgpa>=2.00){standLabel='Satisfactory';standColor='var(--amber)';}
+    else{standLabel='Probation Risk';standColor='#f87171';}
+  }
+  dash.innerHTML=`
+    <div class="g4" style="margin-bottom:20px">
+      <div class="scard" style="--accent:var(--blue)"><div class="scard-lbl">Current CGPA</div><div class="scard-val" style="color:var(--sky)">${cgpa?cgpa.toFixed(2):'—'}</div><div class="scard-sub">${semCount} semester${semCount!==1?'s':''} · ${totalCreds} credits</div></div>
+      <div class="scard" style="--accent:var(--green)"><div class="scard-lbl">Semester GPA</div><div class="scard-val" style="color:var(--green)">${gpa?gpa.toFixed(2):'—'}</div><div class="scard-sub">${courses.length} courses · ${gpaCreds} credits</div></div>
+      <div class="scard" style="--accent:var(--amber)"><div class="scard-lbl">Carry Marks</div><div class="scard-val" style="color:var(--amber)">${carry?carry.toFixed(1):'—'}</div><div class="scard-sub">Out of 40</div></div>
+      <div class="scard" style="--accent:var(--purple)"><div class="scard-lbl">Academic Standing</div><div class="scard-val" style="font-size:18px;color:${standColor}">${standLabel}</div><div class="scard-sub">Based on CGPA</div></div>
+    </div>
+    ${cgpa?`<div class="card" style="margin-bottom:20px">
+      <div class="card-title"><span class="ctag t-blue">📊</span> CGPA Progress</div>
+      <div style="flex:1">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:5px"><span>CGPA</span><span>${cgpa.toFixed(2)} / 4.00</span></div>
+        <div class="ptrack" style="height:12px"><div class="pfill pf-bl" style="width:${(cgpa/4*100).toFixed(1)}%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px"><span>0.00</span><span>Dean's List: 3.75</span><span>4.00</span></div>
+      </div>
+    </div>`:''}
+    ${courses.length?`<div class="card">
+      <div class="card-title"><span class="ctag t-amber">📚</span> Current Semester Courses (${courses.length})</div>
+      <div style="overflow-x:auto"><table class="tbl">
+        <thead><tr><th>Course</th><th>Credits</th><th>Grade</th><th>GP</th></tr></thead>
+        <tbody>${courses.map(c=>{const gp=GRADE_MAP[c.grade]||0;const gi=GRADING.find(r=>r.grade===c.grade);return `<tr><td>${c.name||'—'}</td><td>${c.credits||0}</td><td><span class="gbadge ${gi?gi.cls:''}" style="font-size:12px;padding:2px 10px">${c.grade}</span></td><td style="font-weight:700;color:var(--sky)">${gp.toFixed(2)}</td></tr>`;}).join('')}</tbody>
+      </table></div>
+    </div>`:''}`;
+}
+
+/* =========================================
+   GRADE SCALE
+   ========================================= */
+function renderScaleTable(){
+  document.getElementById('gradeScaleTable').innerHTML=GRADING.map(g=>`
+    <div class="gs-row">
+      <span style="width:80px;font-size:13px;color:var(--text2);font-weight:500">${g.min}–${g.max}</span>
+      <span class="gbadge ${g.cls}" style="font-size:13px">${g.grade}</span>
+      <span style="flex:1"></span>
+      <span style="font-weight:800;color:var(--sky);font-size:15px">${g.gp.toFixed(2)}</span>
+      <div style="width:60px;background:var(--bg3);border-radius:99px;height:5px;overflow:hidden;margin-left:8px"><div style="width:${(g.gp/4*100).toFixed(0)}%;height:100%;background:${g.color};border-radius:99px"></div></div>
+    </div>`).join('');
+}
+
+function lookupGrade(){
+  const m=parseFloat(document.getElementById('lookupMarks').value);
+  const res=document.getElementById('lookupResult');
+  if(isNaN(m)||m<0||m>100){res.innerHTML='';return;}
+  const g=getGrade(m);
+  res.innerHTML=`<div class="result-box" style="padding:16px">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <span class="gbadge ${g.cls}" style="font-size:26px;padding:10px 22px">${g.grade}</span>
+      <div><div style="font-size:12px;color:var(--text2)">Grade Point</div><div style="font-size:24px;font-weight:800;color:var(--sky)">${g.gp.toFixed(2)}</div></div>
+      <div><div style="font-size:12px;color:var(--text2)">Range</div><div style="font-size:16px;font-weight:700">${g.min}–${g.max} marks</div></div>
+    </div>
+  </div>`;
+}
+
+/* =========================================
+   ABOUT KU
+   ========================================= */
+function renderAbout(){
+  document.getElementById('schoolDisciplineList').innerHTML=SCHOOLS.map(s=>`
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--sky);margin-bottom:6px;display:flex;align-items:center;gap:8px">
+        <span style="background:rgba(56,189,248,.15);border-radius:6px;padding:2px 8px;font-size:11px;font-weight:800">${s.short}</span>${s.name}
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${s.disciplines.map(d=>`<span style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--text2)">${d}</span>`).join('')}</div>
+    </div>`).join('<hr style="margin:12px 0;border-color:var(--border)">');
+  document.getElementById('faqList').innerHTML=FAQ.map((f,i)=>`
+    <div class="faq-item" id="faq${i}">
+      <div class="faq-q" onclick="toggleFaq(${i})"><span>${f.q}</span><span class="faq-arr">▾</span></div>
+      <div class="faq-a">${f.a}</div>
+    </div>`).join('');
+}
+function toggleFaq(i){document.getElementById('faq'+i).classList.toggle('open');}
+
+/* =========================================
+   PDF EXPORT
+   ========================================= */
+function getDateStamp(){return new Date().toISOString().slice(0,10);}
+function getPDFOptions(filename){
+  return{margin:[8,8,8,8],filename:filename+'.pdf',image:{type:'jpeg',quality:0.97},html2canvas:{scale:2,useCORS:true,backgroundColor:'#0F172A'},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}};
+}
+function buildPDFHeader(profile,title){
+  const now=new Date().toLocaleString('en-BD',{dateStyle:'long',timeStyle:'short'});
+  const studentInfo=profile?`<span>${profile.name}${profile.studentId?' · ID: '+profile.studentId:''}${profile.discipline?' · '+profile.discipline:''}${profile.batch?' · Batch '+profile.batch:''}</span>`:'<span>Student · Khulna University</span>';
+  return `<div style="border-bottom:2px solid #38BDF8;padding-bottom:14px;margin-bottom:18px"><div style="font-size:22px;font-weight:800;color:#38BDF8;margin-bottom:4px">CG-CAL · KU</div><div style="font-size:16px;font-weight:700;color:#F1F5F9;margin-bottom:6px">${title}</div><div style="font-size:12px;color:#94A3B8;display:flex;gap:16px;flex-wrap:wrap">${studentInfo}<span>Generated: ${now}</span></div></div>`;
+}
+function exportGPAReport(){
+  const el=document.getElementById('gpaResult');
+  if(!el||el.style.display==='none'){showToast('No GPA result to export.','error');return;}
+  const btn=document.querySelector('[onclick="exportGPAReport()"]');
+  if(btn){btn.classList.add('loading');btn.textContent='⏳ Generating…';}
+  const profile=getSavedProfile();
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='padding:20px;font-family:Inter,system-ui,sans-serif;background:#0F172A;color:#F1F5F9';
+  wrapper.innerHTML=buildPDFHeader(profile,'Semester GPA Report')+el.innerHTML;
+  document.body.appendChild(wrapper);
+  html2pdf().set(getPDFOptions('CG-CAL_GPA_Report_'+getDateStamp())).from(wrapper).save().finally(()=>{
+    document.body.removeChild(wrapper);
+    if(btn){btn.classList.remove('loading');btn.textContent='📄 Export PDF Report';}
+    showToast('✅ GPA Report exported!','success');
+  });
+}
+function exportCGPAReport(){
+  const el=document.getElementById('cgpaResult');
+  if(!el||el.style.display==='none'){showToast('No CGPA result to export.','error');return;}
+  const btn=document.querySelector('[onclick="exportCGPAReport()"]');
+  if(btn){btn.classList.add('loading');btn.textContent='⏳ Generating…';}
+  const profile=getSavedProfile();
+  const wrapper=document.createElement('div');
+  wrapper.style.cssText='padding:20px;font-family:Inter,system-ui,sans-serif;background:#0F172A;color:#F1F5F9';
+  wrapper.innerHTML=buildPDFHeader(profile,'Cumulative CGPA Report')+el.innerHTML;
+  document.body.appendChild(wrapper);
+  html2pdf().set(getPDFOptions('CG-CAL_CGPA_Report_'+getDateStamp())).from(wrapper).save().finally(()=>{
+    document.body.removeChild(wrapper);
+    if(btn){btn.classList.remove('loading');btn.textContent='📄 Export PDF Report';}
+    showToast('✅ CGPA Report exported!','success');
+  });
+}
+function exportToPDF(){
+  const btn=document.getElementById('pdfBtn');
+  if(btn){btn.classList.add('loading');btn.textContent='⏳…';}
+  const hideEls=document.querySelectorAll('.topbar,.mob-nav,.modal-overlay');
+  hideEls.forEach(el=>el.setAttribute('data-pdf-hidden',el.style.display));
+  hideEls.forEach(el=>el.style.display='none');
+  const profile=getSavedProfile();
+  const activePage=document.querySelector('.page.on');
+  const pageTitle=activePage?activePage.id.replace('page-','').toUpperCase():'Report';
+  const headerEl=document.createElement('div');
+  headerEl.innerHTML=buildPDFHeader(profile,`CG-CAL — ${pageTitle}`);
+  headerEl.style.cssText='padding:20px 20px 0;font-family:Inter,system-ui,sans-serif';
+  document.querySelector('.app').prepend(headerEl);
+  html2pdf().set({...getPDFOptions('CG-CAL_Export_'+getDateStamp()),html2canvas:{scale:1.5,useCORS:true}}).from(document.body).save().finally(()=>{
+    headerEl.remove();
+    hideEls.forEach(el=>{el.style.display=el.getAttribute('data-pdf-hidden')||'';el.removeAttribute('data-pdf-hidden');});
+    if(btn){btn.classList.remove('loading');btn.textContent='📄 PDF';}
+    showToast('✅ PDF exported!','success');
+  });
+}
+
+/* =========================================
+   PWA
+   ========================================= */
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  const banner=document.getElementById('pwaBanner');
+  if(banner) banner.classList.add('visible');
+});
+function installPWA(){
+  if(!deferredInstallPrompt){showToast('Already installed or not supported in this browser.','error');return;}
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(result=>{
+    if(result.outcome==='accepted'){showToast('✅ App installed!','success');dismissPWABanner();}
+    deferredInstallPrompt=null;
+  });
+}
+function dismissPWABanner(){
+  const banner=document.getElementById('pwaBanner');
+  if(banner) banner.classList.remove('visible');
+}
+function registerServiceWorker(){
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js')
+      .then(()=>console.log('[CG-CAL] Service Worker registered ✅'))
+      .catch(err=>console.warn('[CG-CAL] SW registration failed:',err));
+  }
+}
+
+/* =========================================
+   INIT
+   ========================================= */
+restoreTheme();
+initHomeSelectors();
+renderScaleTable();
+renderAbout();
+updateProfileBadge();
+renderHistory();
+renderProgressTracker();
+registerServiceWorker();
+// Pre-add sample courses and semesters
+addCourse();addCourse();addCourse();
+addSemester();addSemester();
+</script>
+</body>
+</html>
